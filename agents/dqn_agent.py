@@ -11,15 +11,17 @@ import numpy as np
 
 class DQNAgent(Agent):
     def __init__(self, state_size, action_size, seed, device,
-                 buffer_size=int(1e5), batch_size=64, gamma=0.99, tau=1e-3, lr=5e-4, update_every=4):
+                 buffer_size=int(1e5), batch_size=64, gamma=0.99, tau=1e-3, lr=5e-4, update_every=4, double_qn=True):
         super().__init__(state_size, action_size, seed, device, buffer_size, batch_size, gamma, tau, lr, update_every)
         # Q-Network
         self.qnetwork_local = QNet(state_size, action_size, seed).to(device)
-        self.qnetwork_target = QNet(state_size, action_size, seed).to(device)
+        self.qnetwork_target: QNet = QNet(state_size, action_size, seed).to(device)
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=self.lr)
 
         # Replay memory
         self.memory = ReplayBuffer(self.action_size, self.buffer_size, self.batch_size, self.seed, self.device)
+
+        self.double_qn = double_qn
 
     def step(self, state, action, reward, next_state, done):
         # Save an experience in the replay memory
@@ -70,8 +72,12 @@ class DQNAgent(Agent):
 
         """
         states, actions, rewards, next_states, dones = experiences
-
-        targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
+        if self.double_qn:
+            best_action_q = self.qnetwork_local(next_states).detach().max(1)[1]
+            targets_next = self.qnetwork_target(next_states).detach()[
+                np.arange(self.batch_size), best_action_q].unsqueeze(1)
+        else:
+            targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
         targets = rewards + (gamma * targets_next * (1 - dones))
         expected = self.qnetwork_local(states).gather(1, actions)
         # Compute loss
