@@ -1,9 +1,8 @@
 # Project 1: Navigation
 
+<img alt="avatar" src="https://github.com/pieromacaluso.png" width="20px" height="20px"> **Piero Macaluso** - [pieromacaluso](https://github.com/pieromacaluso)
+
 ![Project Cover](./stuff/cover.png)
-
-> <img alt="avatar" src="https://github.com/pieromacaluso.png" width="20px" height="20px"> **Piero Macaluso** - [pieromacaluso](https://github.com/pieromacaluso)
-
 
 - [Project 1: Navigation](#project-1-navigation)
   - [Introduction](#introduction)
