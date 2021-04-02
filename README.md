@@ -19,7 +19,7 @@
 This project is mainly focused on training an agent to navigate and collect bananas in a large square world.
 
 This document is mainly focused on the description of the environment and how to setup the experiments.
-Further information about the algorithm used to train the agent can be retrieved by reading the [`report.md`](report.md) document in the root of this repository
+Further information about the algorithm used to train the agent can be retrieved by reading the [`report.pdf`](report.pdf) document in the root of this repository
 
 ### Environment Details
 
@@ -65,4 +65,11 @@ However, it is possible to use virtualenv or other dependency management systems
 
 To train the agent it is necessary to go to the root folder of the project and run `python train.py`.
 
-The code will start to create checkpoints in the appropriate folder after reaching the last-100 average score of at least 13.0.
+The code will start to create checkpoints in the appropriate folder.
+
+
+### How-to test the agent
+
+The best parameters of the network found in the training are available in the file [checkpoint.pth](chackpoint.pth) in the root folder of this repository.
+
+In order to test the network it is possible to go to the root folder and run `python test.py`
