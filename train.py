@@ -7,11 +7,12 @@ import numpy as np
 from agents.dqn_agent import DQNAgent
 import matplotlib.pyplot as plt
 
+from agents.dueling_dqn_agent import DuelingDQNAgent
 from test import test
 
 if __name__ == '__main__':
     env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64")
-    n_episodes = 2000
+    n_episodes = 1000
     eps_start = 1.0
     eps_decay = 0.99
     eps_min = 0.01
@@ -25,12 +26,14 @@ if __name__ == '__main__':
     action_size = brain.vector_action_space_size
     state_size = len(env_info.vector_observations[0])
 
+
     scores = []
     test_scores = []
     test_scores_i = []
     avg_scores = []
     scores_window = deque(maxlen=100)
-    agent = DQNAgent(state_size, action_size, seed, device)
+    agent = DuelingDQNAgent(state_size, action_size, seed, device)
+    agent.create_dirs()
 
     eps = eps_start
 
@@ -51,13 +54,6 @@ if __name__ == '__main__':
         scores_window.append(score)
         scores.append(score)
         avg_scores.append(np.mean(scores_window))
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        ax1.plot(range(len(scores)), scores, label="Score")
-        ax1.plot(range(len(avg_scores)), avg_scores, label="Avg Score")
-        ax1.plot(test_scores_i, test_scores, label="Test Score")
-        plt.legend()
-        plt.show()
         eps = max(eps_min, eps_decay * eps)
         print('\rEpisode {}\tEps {:.2f}\tLast Score: {:.2f}\tAverage Score: {:.2f}'.format(i_episode, eps, score,
                                                                                            np.mean(scores_window)),
@@ -66,10 +62,19 @@ if __name__ == '__main__':
             test_scores.append(test(env, agent, i_episode))
             test_scores_i.append(i_episode)
             print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))
+            fig = plt.figure()
+            ax1 = fig.add_subplot(111)
+            ax1.plot(range(len(scores)), scores, label="Score")
+            ax1.plot(range(len(avg_scores)), avg_scores, label="Avg Score")
+            ax1.plot(test_scores_i, test_scores, label="Test Score")
+            plt.legend()
+            plt.savefig(agent.checkpoint_dir + f'plot_{i_episode}.png', dpi=300)
+            plt.show()
+            agent.save_weights(i_episode)
         if np.mean(scores_window) >= min_solved:
             min_solved = np.mean(scores_window)
             print('\nNew best in {:d} episodes!\tAverage Score: {:.2f}'.format(i_episode,
-                                                                                         np.mean(scores_window)))
-            torch.save(agent.q_online.state_dict(), f'./checkpoints/checkpoint_{i_episode}.pth')
+                                                                               np.mean(scores_window)))
+            agent.save_weights(i_episode)
 
     env.close()

@@ -1,4 +1,6 @@
+import os
 import random
+from datetime import datetime
 
 import torch
 from torch import optim
@@ -20,6 +22,10 @@ class DQNAgent(Agent):
         # Replay memory
         self.memory = ReplayBuffer(self.action_size, self.buffer_size, self.batch_size, self.seed, self.device)
         self.double_qn = double_qn
+        self.checkpoint_dir = f"./checkpoints/{'Double' if self.double_qn else ''}DQNet_{datetime.now().strftime('%Y%m%d_%H%M%S')}/"
+
+    def create_dirs(self):
+        os.makedirs(self.checkpoint_dir, exist_ok=True)
 
     def step(self, state, action, reward, next_state, done):
         # Save an experience in the replay memory
@@ -108,3 +114,6 @@ class DQNAgent(Agent):
     def load_weights(self, pth_path):
         self.q_online.load_state_dict(torch.load(pth_path))
         self.q_target.load_state_dict(torch.load(pth_path))
+
+    def save_weights(self, i_episode):
+        torch.save(self.q_online.state_dict(), self.checkpoint_dir + f'checkpoint_{i_episode}.pth')

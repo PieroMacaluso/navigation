@@ -49,5 +49,5 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     agent = DQNAgent(state_size, action_size, seed, device)
-    agent.load_weights("./checkpoints/checkpoint_796.pth")
+    agent.load_weights("./checkpoint.pth")
     print(test(env, agent, 0, n_episodes=100, sleep_t=0.03))
