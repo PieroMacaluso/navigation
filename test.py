@@ -50,4 +50,4 @@ if __name__ == '__main__':
 
     agent = DQNAgent(state_size, action_size, seed, device)
     agent.load_weights("./checkpoint.pth")
-    print(test(env, agent, 0, n_episodes=100, sleep_t=0.03))
+    print(test(env, agent, 0, n_episodes=100, sleep_t=0))
