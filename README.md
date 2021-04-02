@@ -12,6 +12,7 @@
       - [Preamble](#preamble)
       - [Instruction](#instruction)
     - [How-to start the training of the agent](#how-to-start-the-training-of-the-agent)
+    - [How-to test the agent](#how-to-test-the-agent)
 
 
 ## Introduction
