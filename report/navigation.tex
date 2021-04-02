@@ -6,15 +6,18 @@
 \usepackage{courier}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
 \frenchspacing
 \setlength{\pdfpagewidth}{8.5in}
 \setlength{\pdfpageheight}{11in}
 \pdfinfo{
 /Title (Navigation Project Report)
 /Author (Piero Macaluso)}
-\setcounter{secnumdepth}{0}  
+\setcounter{secnumdepth}{0}
  \begin{document}
-% The file aaai.sty is the style file for AAAI Press 
+% The file aaai.sty is the style file for AAAI Press
 % proceedings, working notes, and technical reports.
 %
 \title{Navigation Project Report}
@@ -69,7 +72,7 @@ Gradient Clipping \cite{goodfellow2016deep} clips the size of the gradients to e
 
 \subsection{Hyper-parameters}
 
-The first part of the neural network (the \textit{feature extractor}) is composed of the input layer and one linear layer with a hidden size of 64. After this part, there is the \textit{advantage part} composed of one linear layer with a hidden size of 64 and an output layer with as many outputs as action space size. In parallel, there is the \textit{state value} part which is the same as the previous one, but with an output size equal to one. The network exploits \textit{Rectified Linear Unit} (ReLU) as non-linearity. The hyper-parameters used are presented in Table \ref{table:hp}. 
+The first part of the neural network (the \textit{feature extractor}) is composed of the input layer and one linear layer with a hidden size of 64. After this part, there is the \textit{advantage part} composed of one linear layer with a hidden size of 64 and an output layer with as many outputs as action space size. In parallel, there is the \textit{state value} part which is the same as the previous one, but with an output size equal to one. The network exploits \textit{Rectified Linear Unit} (ReLU) as non-linearity. The hyper-parameters used are presented in Table \ref{table:hp}.
 
 \begin{table}[]
 \begin{tabular}{rl}
@@ -80,7 +83,7 @@ Gamma                       & $0.99$                  \\
 Tau                         & $10^{-3}$                 \\
 Learning Rate               & $5\times 10^{-4}$                  \\
 Learning Frequency          & $4$ episodes            \\
-Epsilon (start, decay, min) & $(1.0,0.99,0.01)$      
+Epsilon (start, decay, min) & $(1.0,0.99,0.01)$
 \end{tabular}
 \caption{Hyper-parameters used in the training process}
 \label{table:hp}
@@ -92,7 +95,7 @@ The number of episodes to play was fixed at $1000$, however, the agent took just
 
 The training was not stopped upon reaching the requested value to determine the solution (after $365$ episodes) because it was noticeable that the agent was not so stable. At that stage, the agent frequently got stuck in situations where, while performing complementary actions, he tended to remain stationary in one place as if it were stuck.
 
-To find the best solution, a test phase of 10 episodes was implemented and started every 100 training episodes to evaluate the results without taking into account exploration uncertainties. As shown in Figure \ref{fig:plot}, the best solution was found at episode 1000 \footnote{GIF reporting a handful of seconds of the testing phase} with an average of $18.60$ over 10 episodes. In this case, blocking situations have become much rarer.
+To find the best solution, a test phase of 10 episodes was implemented and started every 100 training episodes to evaluate the results without taking into account exploration uncertainties. As shown in Figure \ref{fig:plot}, the best solution was found at episode 1000 \footnote{GIF reporting a handful of seconds of the testing phase \href{https://github.com/pieromacaluso/navigation/blob/daca21c0d0cdcf5bdf7028f7cde85488ea319e50/stuff/test.gif}{\textcolor{blue}{here}}} with an average of $18.60$ over 10 episodes. In this case, blocking situations have become much rarer.
 
 \begin{figure}[]
 \includegraphics[width=\linewidth]{img/plot_1000.png}
