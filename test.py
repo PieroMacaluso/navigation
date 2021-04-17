@@ -6,6 +6,7 @@ import torch
 from unityagents import UnityEnvironment
 
 from agents.dqn_agent import DQNAgent
+from utils.config import generate_configuration_qnet
 
 
 def test(env, agent, n_ep_train, n_episodes=10, sleep_t=0.0):
@@ -45,9 +46,8 @@ if __name__ == '__main__':
     env_info = env.reset(train_mode=True)[brain_name]
     action_size = brain.vector_action_space_size
     state_size = len(env_info.vector_observations[0])
-    seed = 1
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    config = generate_configuration_qnet(action_size, state_size)
 
-    agent = DQNAgent(state_size, action_size, seed, device)
+    agent = DQNAgent(config)
     agent.load_weights("./checkpoint.pth")
     print(test(env, agent, 0, n_episodes=100, sleep_t=0))
