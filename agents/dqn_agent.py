@@ -5,24 +5,31 @@ from datetime import datetime
 import torch
 from torch import optim
 import torch.nn.functional as F
-from agents.agent import Agent
 from memories.replay_buffer import ReplayBuffer
+from models.q_cnn import QCNN
 from models.q_net import QNet
 import numpy as np
 
 
-class DQNAgent(Agent):
-    def __init__(self, state_size, action_size, seed, device,
-                 buffer_size=int(1e5), batch_size=64, gamma=0.99, tau=1e-3, lr=5e-4, update_every=4, double_qn=True):
-        super().__init__(state_size, action_size, seed, device, buffer_size, batch_size, gamma, tau, lr, update_every)
+class DQNAgent:
+    def __init__(self, config):
+        # Env Data
+        self.config = config
+        self.device = config.device()
+        self.t_step = 0
+
+        # Seed for reproducibility of results
+        self.seed = config.seed
+        random.seed(self.seed)
+
         # Q-Network
-        self.q_online = QNet(state_size, action_size, seed).to(device)
-        self.q_target: QNet = QNet(state_size, action_size, seed).to(device)
-        self.optimizer = optim.Adam(self.q_online.parameters(), lr=self.lr)
+        self.q_online = config.q_online(self.config.state_size, self.config.action_size, self.config.seed).to(self.device)
+        self.q_target = config.q_target(self.config.state_size, self.config.action_size, self.config.seed).to(self.device)
+        self.optimizer = config.optimizer(self.q_online.parameters(), lr=self.config.lr)
         # Replay memory
-        self.memory = ReplayBuffer(self.action_size, self.buffer_size, self.batch_size, self.seed, self.device)
-        self.double_qn = double_qn
-        self.checkpoint_dir = f"./checkpoints/{'Double' if self.double_qn else ''}DQNet_{datetime.now().strftime('%Y%m%d_%H%M%S')}/"
+        self.memory = config.memory()
+        self.double_qn = config.double_qn
+        self.checkpoint_dir = config.checkpoint_dir
 
     def create_dirs(self):
         os.makedirs(self.checkpoint_dir, exist_ok=True)
@@ -32,12 +39,12 @@ class DQNAgent(Agent):
         self.memory.add(state, action, reward, next_state, done)
 
         # Learning phase (every `self.update_every` steps)
-        self.t_step = (self.t_step + 1) % self.update_every
+        self.t_step = (self.t_step + 1) % self.config.update_every
         if self.t_step == 0:
             # If enough samples are available in memory, get random subset and learn
-            if len(self.memory) > self.batch_size:
+            if len(self.memory) > self.config.batch_size:
                 experiences = self.memory.sample()
-                self.learn(experiences, self.gamma)
+                self.learn(experiences, self.config.gamma)
 
     def act(self, state, eps=0.):
         """
@@ -63,7 +70,7 @@ class DQNAgent(Agent):
         if random.random() > eps:
             return np.argmax(action_values.cpu().data.numpy())
         else:
-            return random.choice(np.arange(self.action_size))
+            return random.choice(np.arange(self.config.action_size))
 
     def learn(self, experiences, gamma):
         """
@@ -79,7 +86,7 @@ class DQNAgent(Agent):
         if self.double_qn:
             best_action_q = self.q_online(next_states).detach().max(1)[1]
             targets_next = self.q_target(next_states).detach()[
-                np.arange(self.batch_size), best_action_q].unsqueeze(1)
+                np.arange(self.config.batch_size), best_action_q].unsqueeze(1)
         else:
             targets_next = self.q_target(next_states).detach().max(1)[0].unsqueeze(1)
         targets = rewards + (gamma * targets_next * (1 - dones))
@@ -90,12 +97,12 @@ class DQNAgent(Agent):
         self.optimizer.zero_grad()
         loss.backward()
         # Gradient Clipping
-        for param in self.q_online.parameters():
-            param.grad.data.clamp_(-1, 1)
+        # for param in self.q_online.parameters():
+        #     param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
         # ------------------- update target network ------------------- #
-        DQNAgent.soft_update(self.q_online, self.q_target, self.tau)
+        DQNAgent.soft_update(self.q_online, self.q_target, self.config.tau)
 
     @staticmethod
     def soft_update(local_model, target_model, tau):
